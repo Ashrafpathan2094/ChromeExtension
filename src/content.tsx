@@ -119,8 +119,12 @@ const PlasmoOverlay = () => {
   return (
     <>
       {showPopup && (
-        <div className="fixed inset-0 z-50 flex items-center max-[600px]:bg-sky-300 justify-center bg-black bg-opacity-50">
-          <div className="relative w-full max-w-[32%] p-6 bg-[#F9FAFB] rounded-lg shadow-lg">
+        <div
+          onClick={() => setShowPopup(false)}
+          className="fixed inset-0 z-50 flex items-center max-[600px]:bg-sky-300 justify-center bg-black bg-opacity-50">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-[32%] p-6 bg-[#F9FAFB] rounded-lg shadow-lg">
             <button
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
               onClick={closePopup}>
@@ -148,7 +152,6 @@ const PlasmoOverlay = () => {
                       {item?.input}
                     </p>
                   </div>
-
                   <div
                     key={index}
                     className="flex justify-start items-center my-2">
@@ -165,6 +168,7 @@ const PlasmoOverlay = () => {
               onChange={handleInputChange}
               className="w-full h-16 text-2xl font-normal leading-7  mt-5 px-4 py-2 mb-4 border border-gray-300 rounded-lg focus:outline-none"
               placeholder="Your prompt"
+              style={{ boxShadow: "0px 2px 4px 0px #0000000F inset" }}
             />
             <div className="flex justify-end items-center gap-2">
               {generatedMessages &&
@@ -207,7 +211,9 @@ const PlasmoOverlay = () => {
         </div>
       )}
       {isFocused && (
-        <div onClick={openPopup} className="cursor-pointer">
+        <div
+          onClick={openPopup}
+          className="cursor-pointer absolute top-[70px] min-w-[30px] left-[380px]">
           <img
             src={MagicIcon}
             alt="Magic Icon"
