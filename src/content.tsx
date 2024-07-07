@@ -1,5 +1,5 @@
 import cssText from "data-text:~style.css"
-import type { PlasmoGetOverlayAnchor } from "plasmo"
+import type { PlasmoCSConfig, PlasmoGetOverlayAnchor } from "plasmo"
 import { ChangeEvent, useEffect, useState } from "react"
 
 import GeneratedMessages from "~components/GeneratedMessages/GeneratedMessages"
@@ -12,6 +12,9 @@ import Regenerate from "../assets/regenerate.svg"
 export const getOverlayAnchor: PlasmoGetOverlayAnchor = async () =>
   document.querySelector<HTMLElement>(".msg-form__contenteditable")
 
+export const config: PlasmoCSConfig = {
+  matches: ["https://*.linkedin.com/*"]
+}
 export const getStyle = (): HTMLStyleElement => {
   const style = document.createElement("style")
   style.textContent = cssText
