@@ -21,8 +21,6 @@ const PlasmoOverlay = () => {
   const [generatedMessages, setGeneratedMessages] = useState<
     { input: string; response: string }[]
   >([])
-  const [insertedMessage, setInsertedMessage] = useState("")
-  const [isInputValid, setIsInputValid] = useState(true)
   const [isFocused, setIsFocused] = useState(false)
 
   const openPopup = () => {
@@ -36,14 +34,19 @@ const PlasmoOverlay = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const text = e.target.value // Trim whitespace from input text
     setInputValue(text)
-    setIsInputValid(text.length > 0) // Validate input (not empty or all spaces)
   }
 
   const handleGenerate = () => {
+    if (generatedMessages.length > 0) {
+      //if already a message then return
+      return
+    }
+
     if (inputValue.trim().length > 0) {
       // Generate a response (hardcoded)
       const response =
         "Thank you for the opportunity! If you have any more questions or if there's anything else I can help you with, feel free to ask."
+      // incase in future i want to add more messages
       setGeneratedMessages((prevMessages) => [
         ...prevMessages,
         { input: inputValue, response }
@@ -55,93 +58,46 @@ const PlasmoOverlay = () => {
   const handleInsert = () => {
     const messageInputBox = document.querySelector(".msg-form__contenteditable")
     const placeHolder = document.querySelector(".msg-form__placeholder")
+
     if (messageInputBox && generatedMessages.length > 0) {
       messageInputBox.setAttribute("aria-label", "")
+
       const lastGeneratedMessage =
         generatedMessages[generatedMessages.length - 1].response
       const existingParagraph = messageInputBox.querySelector("p")
+
       if (existingParagraph) {
         existingParagraph.textContent = lastGeneratedMessage
-        placeHolder.removeAttribute("placeholder")
+        placeHolder.removeAttribute("data-placeholder")
       }
-      // Logging to help diagnose the issue
-      console.log(
-        "Before removing aria-label:",
-        messageInputBox.getAttribute("aria-label")
-      )
 
-      console.log(
-        "After removing aria-label:",
-        messageInputBox.getAttribute("aria-label")
-      )
       setShowPopup(false)
     }
   }
 
-  // useEffect(() => {
-  //   const messageInputBox = document.querySelector(".msg-form__contenteditable")
-  //   if (messageInputBox) {
-  //     const iconsContainer = document.createElement("div")
-  //     iconsContainer.classList.add(
-  //       "icons-container",
-  //       "absolute",
-  //       "bottom-0",
-  //       "right-0",
-  //       "flex",
-  //       "items-center",
-  //       "p-2",
-  //       "cursor-pointer"
-  //     )
-
-  //     const magicIconImg = document.createElement("img")
-  //     magicIconImg.src = MagicIcon
-  //     magicIconImg.addEventListener("click", openPopup)
-  //     iconsContainer.appendChild(magicIconImg)
-
-  //     messageInputBox.appendChild(iconsContainer)
-  //   }
-
-  //   return () => {
-  //     // Clean up event listeners if component unmounts
-  //     magicIconImg.removeEventListener("click", openPopup)
-  //   }
-  // }, [])
-
   useEffect(() => {
-    const messageInputBox = document.querySelector(".msg-form__contenteditable")
+    const messageInputBox = document.querySelector(
+      ".msg-form__contenteditable"
+    ) as HTMLElement
     let iconsContainer: HTMLDivElement | null = null
     let magicIconImg: HTMLImageElement | null = null
 
+    if (messageInputBox) {
+      messageInputBox.style.position = "relative"
+    }
     const handleFocus = () => {
       setIsFocused(true)
-      if (messageInputBox && !iconsContainer) {
-        iconsContainer = document.createElement("div")
-        iconsContainer.classList.add(
-          "icons-container",
-          "absolute",
-          "bottom-0",
-          "right-0",
-          "flex",
-          "items-center",
-          "p-2",
-          "cursor-pointer"
-        )
-
-        magicIconImg = document.createElement("img")
-        magicIconImg.src = MagicIcon
-        magicIconImg.addEventListener("click", openPopup)
-        iconsContainer.appendChild(magicIconImg)
-
-        messageInputBox.appendChild(iconsContainer)
-      }
     }
 
     const handleBlur = () => {
-      setIsFocused(false)
-      if (iconsContainer && iconsContainer.parentNode) {
-        iconsContainer.parentNode.removeChild(iconsContainer)
-        iconsContainer = null
-      }
+      //added a delay so that the icon doesnt disappear instantly after focus
+      setTimeout(() => {
+        setIsFocused(false)
+        if (iconsContainer && iconsContainer.parentNode) {
+          iconsContainer.parentNode.removeChild(iconsContainer)
+          iconsContainer = null
+        }
+      }, 500)
     }
 
     if (messageInputBox) {
@@ -163,7 +119,7 @@ const PlasmoOverlay = () => {
   return (
     <>
       {showPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center max-[600px]:bg-sky-300 justify-center bg-black bg-opacity-50">
           <div className="relative w-full max-w-[32%] p-6 bg-[#F9FAFB] rounded-lg shadow-lg">
             <button
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
@@ -232,7 +188,7 @@ const PlasmoOverlay = () => {
                     : ""
                 }`}
                 onClick={handleGenerate}
-                disabled={!isInputValid}>
+                disabled={inputValue.trim().length === 0}>
                 <img
                   src={
                     generatedMessages && generatedMessages.length > 0
@@ -250,17 +206,15 @@ const PlasmoOverlay = () => {
           </div>
         </div>
       )}
-
-      {/* Placeholder for message input box */}
-      {/* MagicIcon */}
-      {/* <div className="relative">
-        <img
-          src={MagicIcon}
-          alt="Magic Icon"
-          className=" bottom-0 right-0 flex items-center p-2 cursor-pointer"
-          onClick={openPopup}
-        />
-      </div> */}
+      {isFocused && (
+        <div onClick={openPopup} className="cursor-pointer">
+          <img
+            src={MagicIcon}
+            alt="Magic Icon"
+            className="flex items-center p-2"
+          />
+        </div>
+      )}
     </>
   )
 }
