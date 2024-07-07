@@ -1,3 +1,12 @@
+
+
+
+https://github.com/Ashrafpathan2094/ChromeExtension/assets/47737430/5b50b8c3-5bc2-4789-a501-83ada9ab1b7a
+
+
+
+
+
 This is a [Plasmo extension](https://docs.plasmo.com/) project bootstrapped with [`plasmo init`](https://www.npmjs.com/package/plasmo).
 
 ## Getting Started
