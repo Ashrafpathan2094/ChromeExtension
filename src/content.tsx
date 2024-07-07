@@ -1,6 +1,8 @@
 import cssText from "data-text:~style.css"
 import type { PlasmoGetOverlayAnchor } from "plasmo"
-import { useEffect, useState } from "react"
+import { ChangeEvent, useEffect, useState } from "react"
+
+import GeneratedMessages from "~components/GeneratedMessages/GeneratedMessages"
 
 import DownArrow from "../assets/downarrow.svg"
 import GenerateIcon from "../assets/generateArrow.svg"
@@ -10,43 +12,41 @@ import Regenerate from "../assets/regenerate.svg"
 export const getOverlayAnchor: PlasmoGetOverlayAnchor = async () =>
   document.querySelector<HTMLElement>(".msg-form__contenteditable")
 
-export const getStyle = () => {
+export const getStyle = (): HTMLStyleElement => {
   const style = document.createElement("style")
   style.textContent = cssText
   return style
 }
-const PlasmoOverlay = () => {
-  const [showPopup, setShowPopup] = useState(false)
-  const [inputValue, setInputValue] = useState("")
+
+const PlasmoOverlay: React.FC = () => {
+  const [showPopup, setShowPopup] = useState<boolean>(false)
+  const [inputValue, setInputValue] = useState<string>("")
   const [generatedMessages, setGeneratedMessages] = useState<
     { input: string; response: string }[]
   >([])
-  const [isFocused, setIsFocused] = useState(false)
+  const [isFocused, setIsFocused] = useState<boolean>(false)
 
-  const openPopup = () => {
+  const openPopup = (): void => {
     setShowPopup(true)
   }
 
-  const closePopup = () => {
+  const closePopup = (): void => {
+    setInputValue("")
     setShowPopup(false)
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const text = e.target.value // Trim whitespace from input text
-    setInputValue(text)
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    setInputValue(e.target.value)
   }
 
-  const handleGenerate = () => {
+  const handleGenerate = (): void => {
     if (generatedMessages.length > 0) {
-      //if already a message then return
       return
     }
 
     if (inputValue.trim().length > 0) {
-      // Generate a response (hardcoded)
-      const response =
+      const response: string =
         "Thank you for the opportunity! If you have any more questions or if there's anything else I can help you with, feel free to ask."
-      // incase in future i want to add more messages
       setGeneratedMessages((prevMessages) => [
         ...prevMessages,
         { input: inputValue, response }
@@ -55,20 +55,25 @@ const PlasmoOverlay = () => {
     }
   }
 
-  const handleInsert = () => {
-    const messageInputBox = document.querySelector(".msg-form__contenteditable")
-    const placeHolder = document.querySelector(".msg-form__placeholder")
+  const handleInsert = (): void => {
+    const messageInputBox: HTMLElement | null = document.querySelector(
+      ".msg-form__contenteditable"
+    )
+    const placeHolder: HTMLElement | null = document.querySelector(
+      ".msg-form__placeholder"
+    )
 
     if (messageInputBox && generatedMessages.length > 0) {
       messageInputBox.setAttribute("aria-label", "")
 
-      const lastGeneratedMessage =
+      const lastGeneratedMessage: string =
         generatedMessages[generatedMessages.length - 1].response
-      const existingParagraph = messageInputBox.querySelector("p")
+      const existingParagraph: HTMLElement | null =
+        messageInputBox.querySelector("p")
 
       if (existingParagraph) {
         existingParagraph.textContent = lastGeneratedMessage
-        placeHolder.removeAttribute("data-placeholder")
+        placeHolder?.removeAttribute("data-placeholder")
       }
 
       setShowPopup(false)
@@ -76,27 +81,21 @@ const PlasmoOverlay = () => {
   }
 
   useEffect(() => {
-    const messageInputBox = document.querySelector(
+    const messageInputBox: HTMLElement | null = document.querySelector(
       ".msg-form__contenteditable"
-    ) as HTMLElement
-    let iconsContainer: HTMLDivElement | null = null
-    let magicIconImg: HTMLImageElement | null = null
+    )
 
     if (messageInputBox) {
       messageInputBox.style.position = "relative"
     }
-    const handleFocus = () => {
+
+    const handleFocus = (): void => {
       setIsFocused(true)
     }
 
-    const handleBlur = () => {
-      //added a delay so that the icon doesnt disappear instantly after focus
+    const handleBlur = (): void => {
       setTimeout(() => {
         setIsFocused(false)
-        if (iconsContainer && iconsContainer.parentNode) {
-          iconsContainer.parentNode.removeChild(iconsContainer)
-          iconsContainer = null
-        }
       }, 500)
     }
 
@@ -110,9 +109,6 @@ const PlasmoOverlay = () => {
         messageInputBox.removeEventListener("focus", handleFocus)
         messageInputBox.removeEventListener("blur", handleBlur)
       }
-      if (magicIconImg) {
-        magicIconImg.removeEventListener("click", openPopup)
-      }
     }
   }, [])
 
@@ -120,8 +116,8 @@ const PlasmoOverlay = () => {
     <>
       {showPopup && (
         <div
-          onClick={() => setShowPopup(false)}
-          className="fixed inset-0 z-50 flex items-center max-[600px]:bg-sky-300 justify-center bg-black bg-opacity-50">
+          onClick={closePopup}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-[32%] p-6 bg-[#F9FAFB] rounded-lg shadow-lg">
@@ -141,32 +137,14 @@ const PlasmoOverlay = () => {
                   d="M6 18L18 6M6 6l12 12"></path>
               </svg>
             </button>
-            {generatedMessages &&
-              generatedMessages.length > 0 &&
-              generatedMessages.map((item, index) => (
-                <>
-                  <div
-                    key={index}
-                    className="flex justify-end items-center my-2">
-                    <p className="max-w-[80%] p-2 bg-[#DFE1E7] font-normal text-[#666D80] rounded-xl text-2xl  leading-9 break-words">
-                      {item?.input}
-                    </p>
-                  </div>
-                  <div
-                    key={index}
-                    className="flex justify-start items-center my-2">
-                    <p className="max-w-[80%] p-2 bg-[#DBEAFE] font-normal text-[#666D80] rounded-xl text-2xl leading-9 break-words">
-                      {item?.response}
-                    </p>
-                  </div>
-                </>
-              ))}
+            {/* Render generated messages using the new component */}
+            <GeneratedMessages generatedMessages={generatedMessages} />
 
             <input
               type="text"
               value={inputValue}
               onChange={handleInputChange}
-              className="w-full h-16 text-2xl font-normal leading-7  mt-5 px-4 py-2 mb-4 border border-gray-300 rounded-lg focus:outline-none"
+              className="w-full h-16 text-2xl font-normal leading-7 mt-5 px-4 py-2 mb-4 border border-gray-300 rounded-lg focus:outline-none"
               placeholder="Your prompt"
               style={{ boxShadow: "0px 2px 4px 0px #0000000F inset" }}
             />
